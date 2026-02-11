@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "catastrofe"
-version = "1.2.0"
+version = "1.2.1"
 description = "Eina per dividir fitxers XML grans en parts més petites"
 authors = [{name = "Your Name"}]
 readme = "README.md"
