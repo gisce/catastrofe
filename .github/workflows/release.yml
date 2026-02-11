@@ -11,8 +11,17 @@ permissions:
 
 jobs:
   build:
-    name: Build Linux binary
-    runs-on: ubuntu-latest
+    name: Build ${{ matrix.os }} binary
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: catastrofe
+            asset_name: catastrofe-linux
+          - os: windows-latest
+            artifact_name: catastrofe.exe
+            asset_name: catastrofe-windows.exe
 
     steps:
       - name: Checkout code
@@ -33,10 +42,45 @@ jobs:
         run: |
           pyinstaller --onefile -n catastrofe catastrofe/cli.py
 
+      - name: Rename binary (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          mv dist/${{ matrix.artifact_name }} dist/${{ matrix.asset_name }}
+
+      - name: Rename binary (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          move dist\${{ matrix.artifact_name }} dist\${{ matrix.asset_name }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset_name }}
+          path: dist/${{ matrix.asset_name }}
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/
+
+      - name: Prepare release files
+        run: |
+          mkdir -p release
+          find dist/ -type f -exec cp {} release/ \;
+          ls -lh release/
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/catastrofe
+          files: release/*
           prerelease: ${{ contains(github.ref, '-rc') }}
           generate_release_notes: true
           body: |
@@ -44,18 +88,27 @@ jobs:
             
             Eina per processar dades del Cadastre espanyol.
             
+            ### 📦 Binaris disponibles
+            
+            - **Linux**: `catastrofe-linux`
+            - **Windows**: `catastrofe-windows.exe`
+            
             ### 🚀 Instal·lació
             
+            #### Linux
             ```bash
             # Descarrega el binari
-            wget https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/catastrofe
+            wget https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/catastrofe-linux
             
             # Fes-lo executable
-            chmod +x catastrofe
+            chmod +x catastrofe-linux
             
             # Mou-lo al PATH (opcional)
-            sudo mv catastrofe /usr/local/bin/catastrofe
+            sudo mv catastrofe-linux /usr/local/bin/catastrofe
             ```
+            
+            #### Windows
+            Descarrega `catastrofe-windows.exe` i executa'l des del terminal o PowerShell.
             
             ### 💻 Ús
             ```bash
