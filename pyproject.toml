@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "xml-splitter"
+name = "catastrofe"
 version = "1.2.0"
 description = "Eina per dividir fitxers XML grans en parts més petites"
 authors = [{name = "Your Name"}]
