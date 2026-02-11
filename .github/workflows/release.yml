@@ -31,7 +31,7 @@ jobs:
 
       - name: Build binary with PyInstaller
         run: |
-          pyinstaller --onefile --name catastrofe --hidden-import=catastrofe.cli --hidden-import=catastrofe.xml_splitter -c catastrofe/cli.py
+          pyinstaller --onefile -n catastrofe catastrofe/cli.py
 
       - name: Create Release
         uses: softprops/action-gh-release@v2

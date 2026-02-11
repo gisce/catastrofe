@@ -11,7 +11,7 @@ from rich.panel import Panel
 from rich import box
 from rich.text import Text
 
-from .xml_splitter import XMLSplitter
+from catastrofe.xml_splitter import XMLSplitter
 
 console = Console()
 
