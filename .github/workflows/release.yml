@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+      - "v*.*.*-rc*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Linux binary
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+          pip install pyinstaller
+
+      - name: Build binary with PyInstaller
+        run: |
+          pyinstaller --onefile --name catastrofe --hidden-import=catastrofe.cli --hidden-import=catastrofe.xml_splitter -c catastrofe/cli.py
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/catastrofe
+          prerelease: ${{ contains(github.ref, '-rc') }}
+          generate_release_notes: true
+          body: |
+            ## 🏛️ Catastrofe ${{ github.ref_name }}
+            
+            Eina per processar dades del Cadastre espanyol.
+            
+            ### 🚀 Instal·lació
+            
+            ```bash
+            # Descarrega el binari
+            wget https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/catastrofe
+            
+            # Fes-lo executable
+            chmod +x catastrofe
+            
+            # Mou-lo al PATH (opcional)
+            sudo mv catastrofe /usr/local/bin/catastrofe
+            ```
+            
+            ### 💻 Ús
+            ```bash
+            catastrofe split fitxer.xml -o sortida -s 450
+            ```
+
+      - name: Clean
+        run: |
+          rm -rf dist/
+          rm -rf build/
+
