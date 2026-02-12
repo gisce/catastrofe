@@ -12,6 +12,7 @@ from rich import box
 from rich.text import Text
 
 from catastrofe.xml_splitter import XMLSplitter
+from catastrofe.csv_exporter import CatastroCSVExporter
 
 console = Console()
 
@@ -72,6 +73,29 @@ def split(input_file, output_dir, max_size):
         output_files = splitter.split()
         splitter.display_summary(output_files)
         
+    except Exception as e:
+        console.print(f"\n[bold red]✗ Error:[/bold red] {str(e)}", style="red")
+        console.print_exception()
+        raise click.Abort()
+
+
+@cli.command('export-csv')
+@click.argument('input_files', nargs=-1, required=True, type=click.Path(exists=True, path_type=Path))
+@click.option('-o', '--output', type=click.Path(path_type=Path), required=True, help='Fitxer CSV de sortida')
+def export_csv(input_files, output):
+    """Exporta dades del Cadastre a CSV."""
+    console.print()
+    banner = Panel(
+        Text.from_markup("[bold cyan]📊 CSV Exporter[/bold cyan]\nExportant dades del Cadastre ✨"),
+        border_style="cyan",
+        box=box.DOUBLE
+    )
+    console.print(banner)
+    console.print()
+    
+    try:
+        exporter = CatastroCSVExporter(input_files=list(input_files), output_file=output)
+        exporter.export()
     except Exception as e:
         console.print(f"\n[bold red]✗ Error:[/bold red] {str(e)}", style="red")
         console.print_exception()
