@@ -13,12 +13,13 @@ from rich.text import Text
 
 from catastrofe.xml_splitter import XMLSplitter
 from catastrofe.csv_exporter import CatastroCSVExporter
+import catastrofe
 
 console = Console()
 
 
 @click.group()
-@click.version_option(version="1.0.0")
+@click.version_option(version=catastrofe.__version__)
 def cli():
     """
     🏛️ Catastrofe - Eina per processar dades del Cadastre

@@ -1,6 +1,6 @@
 # 🏛️ Catastrofe
 
-Eina per processar dades del Cadastre espanyol. Inclou utilitats per dividir fitxers XML grans i altres funcionalitats per treballar amb dades cadastrals.
+Eina per processar dades del Cadastre espanyol. Inclou utilitats per dividir fitxers XML grans i exportar dades a CSV.
 
 ## ✨ Característiques
 
@@ -11,6 +11,14 @@ Eina per processar dades del Cadastre espanyol. Inclou utilitats per dividir fit
 - ⚡ **Ràpid i eficient**: Processa fitxers grans amb barra de progrés en temps real
 - 🎨 **Output colorejat**: Taules boniques amb estadístiques detallades
 - 🔧 **Configurable**: Mida màxima personalitzable per cada part
+
+### Export CSV - Exportador de dades cadastrals
+
+- 📄 **Múltiples formats**: Accepta fitxers .zip i .xml com a entrada
+- 📊 **Unificació de dades**: Combina múltiples fitxers en un únic CSV
+- 🔢 **Preservació de zeros**: Manté els zeros inicials dels camps numèrics
+- 📋 **Camps detallats**: Extreu tots els camps importants del cadastre
+- ⚡ **Processament batch**: Processa múltiples fitxers d'una sola vegada
 
 ## 📋 Requisits
 
@@ -74,13 +82,32 @@ catastrofe split girona_entrada.xml -s 400
 catastrofe split girona_entrada.xml -o sortida -s 500
 ```
 
+### Export CSV - Exportar dades a CSV
+
+Exporta dades del Cadastre a format CSV. Accepta fitxers .zip o .xml com a entrada.
+
+```bash
+# Exporta un fitxer
+catastrofe export-csv dades.zip -o sortida.csv
+
+# Exporta múltiples fitxers (es combinen en un sol CSV)
+catastrofe export-csv file1.zip file2.xml file3.zip -o sortida.csv
+
+# El CSV generat conté els següents camps separats per ;
+# TV, NV, PNP, PLP, BQ, ES, PT, PU, PCA+CAR+CDC1+CDC2, PCA, CAR, CDC1, CDC2,
+# CPO, CPA, KM, ESC, PLA, PUE, POL, PAR, SNP, SLP, KK
+```
+
+**Nota:** Els valors es mantenen com a text per preservar els zeros inicials (ex: 0005).
+
 ## 📁 Estructura del projecte
 
 ```
 catastrofe/
 ├── catastrofe/             # Paquet principal
-│   ├── __init__.py         # Exporta XMLSplitter
+│   ├── __init__.py         # Exporta classes
 │   ├── xml_splitter.py     # Classe XMLSplitter
+│   ├── csv_exporter.py     # Classe CatastroCSVExporter
 │   └── cli.py              # CLI amb Click
 ├── output/                 # Fitxers de sortida (generats automàticament)
 ├── girona_entrada.xml      # Fitxer d'exemple d'entrada
@@ -93,7 +120,7 @@ catastrofe/
 
 El paquet es pot utilitzar com a biblioteca Python en altres projectes:
 
-### Exemple bàsic
+### XMLSplitter - Dividir XMLs
 
 ```python
 from pathlib import Path
@@ -103,7 +130,8 @@ from catastrofe import XMLSplitter
 splitter = XMLSplitter(
     input_file=Path("dades.xml"),
     output_dir=Path("sortida"),
-    max_size_kb=450
+    max_size_kb=450,
+    verbose=False  # Sense sortida visual
 )
 output_files = splitter.split()
 
@@ -112,44 +140,19 @@ for file in output_files:
     print(f"Generat: {file}")
 ```
 
-### Exemple amb interfície visual
+### CatastroCSVExporter - Exportar a CSV
 
 ```python
 from pathlib import Path
-from catastrofe import XMLSplitter
+from catastrofe import CatastroCSVExporter
 
-splitter = XMLSplitter(
-    input_file=Path("girona_entrada.xml"),
-    output_dir=Path("output_exemple"),
-    max_size_kb=450,
-    verbose=True  # Mostra barres de progrés i missatges colorejats
-)
-
-output_files = splitter.split()
-splitter.display_summary(output_files)  # Mostra taula resum
-```
-
-### Exemple silenciós (per a integració en serveis)
-
-```python
-from pathlib import Path
-from catastrofe import XMLSplitter
-
-# Mode silenciós per a ús en APIs, scripts automatitzats, etc.
-splitter = XMLSplitter(
-    input_file=Path("dades.xml"),
-    output_dir=Path("sortida"),
-    max_size_kb=400,
+# Exporta dades a CSV
+exporter = CatastroCSVExporter(
+    input_files=[Path("file1.zip"), Path("file2.xml")],
+    output_file=Path("sortida.csv"),
     verbose=False  # Sense sortida visual
 )
-
-output_files = splitter.split()
-
-# Processa els resultats
-print(f"Fitxers generats: {len(output_files)}")
-for file in output_files:
-    size_kb = file.stat().st_size / 1024
-    print(f"  - {file.name}: {size_kb:.1f} KB")
+exporter.export()
 ```
 
 Consulta `exemple_us_llibreria.py` per a més exemples d'ús.
