@@ -56,11 +56,8 @@ class CatastroCSVExporter:
         """Extreu les dades d'un element BIE."""
         data = {}
         
-        # IBI
+        # RCA dins IBI - Referència cadastral
         ibi = bie.find('IBI')
-        data['TV'] = self.get_text(ibi, 'TIP')
-        
-        # RCA dins IBI
         rca = ibi.find('RCA') if ibi is not None else None
         data['PCA'] = self.get_text(rca, 'PCA')
         data['CAR'] = self.get_text(rca, 'CAR')
@@ -70,34 +67,39 @@ class CatastroCSVExporter:
         # Concatenat
         data['PCA_CAR_CDC1_CDC2'] = f"{data['PCA']}{data['CAR']}{data['CDC1']}{data['CDC2']}"
         
-        # DT
-        dt = bie.find('DT')
-        loine = dt.find('LOINE') if dt is not None else None
-        data['NV'] = self.get_text(loine, 'NV')
-        data['PNP'] = self.get_text(loine, 'PNP')
-        data['PLP'] = self.get_text(loine, 'PLP')
-        data['BQ'] = self.get_text(loine, 'BQ')
-        data['ES'] = self.get_text(loine, 'ES')
-        data['PT'] = self.get_text(loine, 'PT')
-        data['PU'] = self.get_text(loine, 'PU')
+        # DIR - Adreça (només propietats urbanes)
+        dir_section = bie.find('.//DIR')
+        data['TV'] = self.get_text(dir_section, 'TV')
+        data['NV'] = self.get_text(dir_section, 'NV')
+        data['PNP'] = self.get_text(dir_section, 'PNP')
+        data['PLP'] = self.get_text(dir_section, 'PLP')
+        data['BQ'] = self.get_text(dir_section, 'BQ')
+        data['KM'] = self.get_text(dir_section, 'KM')
         
-        # LORUS dins DT
-        lorus = dt.find('.//LORUS') if dt is not None else None
-        data['KM'] = self.get_text(lorus, 'KM')
-        data['ESC'] = self.get_text(lorus, 'ESC')
-        data['PLA'] = self.get_text(lorus, 'PLA')
-        data['PUE'] = self.get_text(lorus, 'PUE')
+        # LOINT - Localització dins edifici (només propietats urbanes)
+        loint = bie.find('.//LOINT')
+        data['ES'] = self.get_text(loint, 'ES')
+        data['PT'] = self.get_text(loint, 'PT')
+        data['PU'] = self.get_text(loint, 'PU')
         
-        # CPP dins LORUS
-        cpp = lorus.find('CPP') if lorus is not None else None
+        # CPP - Polígon i parcel·la
+        cpp = bie.find('.//CPP')
         data['CPO'] = self.get_text(cpp, 'CPO')
         data['CPA'] = self.get_text(cpp, 'CPA')
         
-        # Altres camps de DT
+        # LEC/ELC - Elements constructius (primer element)
+        lec = bie.find('.//LEC')
+        elc = lec.find('.//ELC') if lec is not None else None
+        data['ESC'] = self.get_text(elc, 'ESC')
+        data['PLA'] = self.get_text(elc, 'PLA')
+        data['PUE'] = self.get_text(elc, 'PUE')
+        
+        # DT - Altres camps
+        dt = bie.find('DT')
         data['POL'] = self.get_text(dt, 'POL')
         data['PAR'] = self.get_text(dt, 'PAR')
         
-        # LCONS dins DT
+        # LCONS - Construccions
         lcons = dt.find('.//LCONS') if dt is not None else None
         data['SNP'] = self.get_text(lcons, 'SNP')
         data['SLP'] = self.get_text(lcons, 'SLP')
